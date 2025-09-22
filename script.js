@@ -10,14 +10,21 @@ function showAlert(message) {
 function toggleForm(layanan) {
     const formKadastral = document.getElementById('formKadastral');
     const formTematik = document.getElementById('formTematik');
+    const formPengembalianBatas = document.getElementById('formPengembalianBatas');
     const hasilContainer = document.getElementById('hasilContainer');
 
     if (layanan === 'kadastral') {
         formKadastral.classList.remove('hidden');
         formTematik.classList.add('hidden');
-    } else {
+        formPengembalianBatas.classList.add('hidden');
+    } else if (layanan === 'tematik') {
         formKadastral.classList.add('hidden');
         formTematik.classList.remove('hidden');
+        formPengembalianBatas.classList.add('hidden');
+    } else if (layanan === 'pengembalian_batas') {
+        formKadastral.classList.add('hidden');
+        formTematik.classList.add('hidden');
+        formPengembalianBatas.classList.remove('hidden');
     }
     hasilContainer.classList.add('hidden');
 }
@@ -42,10 +49,27 @@ luasInputTematik.addEventListener('input', function(e) {
     clearTematikBtn.classList.toggle('hidden', e.target.value === '');
 });
 
+const luasInputPengembalianBatas = document.getElementById('luasInputPengembalianBatas');
+const clearPengembalianBatasBtn = document.getElementById('clearPengembalianBatasBtn');
+luasInputPengembalianBatas.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\./g, '');
+    if (!isNaN(value) && value !== '') {
+        e.target.value = new Intl.NumberFormat('id-ID').format(value);
+    }
+    clearPengembalianBatasBtn.classList.toggle('hidden', e.target.value === '');
+});
+
 function clearInput(inputId) {
     const input = document.getElementById(inputId);
     input.value = '';
-    const clearBtn = inputId === 'luasInputKadastral' ? clearKadastralBtn : clearTematikBtn;
+    let clearBtn;
+    if (inputId === 'luasInputKadastral') {
+        clearBtn = clearKadastralBtn;
+    } else if (inputId === 'luasInputTematik') {
+        clearBtn = clearTematikBtn;
+    } else {
+        clearBtn = clearPengembalianBatasBtn;
+    }
     clearBtn.classList.add('hidden');
 }
 
@@ -57,7 +81,7 @@ function hitungKadastral() {
     const hasilText = document.getElementById('hasilText');
 
     if (isNaN(luas) || luas <= 0) {
-        showAlert("Mohon masukkan luas yang valid untuk layanan Kadastral.");
+        showAlert("Mohon masukkan luas yang valid untuk layanan Pengukuran dan Pemetaan Kadastral.");
         hasilContainer.classList.add('hidden');
         return;
     }
@@ -90,7 +114,7 @@ function hitungKadastral() {
         }
     }
     
-    hasilText.textContent = `Tarif layanan Kadastral: Rp ${tarif.toLocaleString('id-ID')}`;
+    hasilText.textContent = `Tarif layanan Pengukuran dan Pemetaan Kadastral: Rp ${tarif.toLocaleString('id-ID')}`;
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
     hasilContainer.classList.remove('hidden');
 }
@@ -104,7 +128,7 @@ function hitungTematik() {
     const hasilText = document.getElementById('hasilText');
 
     if (isNaN(luas) || luas <= 0) {
-        showAlert("Mohon masukkan luas yang valid untuk layanan Tematik.");
+        showAlert("Mohon masukkan luas yang valid untuk layanan Pemetaan Tematik Kawasan.");
         hasilContainer.classList.add('hidden');
         return;
     }
@@ -116,7 +140,55 @@ function hitungTematik() {
         tarif = luas * 20000;
     }
 
-    hasilText.textContent = `Tarif layanan Tematik: Rp ${tarif.toLocaleString('id-ID')}`;
+    hasilText.textContent = `Tarif layanan Pemetaan Tematik Kawasan: Rp ${tarif.toLocaleString('id-ID')}`;
+    catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
+    hasilContainer.classList.remove('hidden');
+}
+
+function hitungPengembalianBatas() {
+    const luasRaw = document.getElementById('luasInputPengembalianBatas').value.replace(/\./g, '');
+    const luas = parseFloat(luasRaw);
+    const hasilContainer = document.getElementById('hasilContainer');
+    const catatanPasal = document.getElementById('catatanPasal');
+    const hasilText = document.getElementById('hasilText');
+
+    if (isNaN(luas) || luas <= 0) {
+        showAlert("Mohon masukkan luas yang valid untuk layanan Pengembalian Batas.");
+        hasilContainer.classList.add('hidden');
+        return;
+    }
+    
+    const jenisLayanan = document.getElementById('jenisPengembalianBatasDropdown').value;
+    let tarifDasar = 0;
+
+    const tarifDasarPertanian = 40000;
+    const tarifDasarNonPertanian = 80000;
+    const luas10Ha = 100000;
+    const luas1000Ha = 10000000;
+
+    if (luas <= luas10Ha) {
+        if (jenisLayanan === 'pertanian') {
+            tarifDasar = (luas * tarifDasarPertanian / 500) + 100000;
+        } else {
+            tarifDasar = (luas * tarifDasarNonPertanian / 500) + 100000;
+        }
+    } else if (luas <= luas1000Ha) {
+        if (jenisLayanan === 'pertanian') {
+            tarifDasar = (luas * tarifDasarPertanian / 4000) + 14000000;
+        } else {
+            tarifDasar = (luas * tarifDasarNonPertanian / 4000) + 14000000;
+        }
+    } else {
+        if (jenisLayanan === 'pertanian') {
+            tarifDasar = (luas * tarifDasarPertanian / 10000) + 134000000;
+        } else {
+            tarifDasar = (luas * tarifDasarNonPertanian / 10000) + 134000000;
+        }
+    }
+    
+    const tarifFinal = tarifDasar * 1.5;
+
+    hasilText.textContent = `Tarif layanan Pengembalian Batas: Rp ${tarifFinal.toLocaleString('id-ID')}`;
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
     hasilContainer.classList.remove('hidden');
 }
