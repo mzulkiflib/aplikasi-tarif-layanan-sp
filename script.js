@@ -1,12 +1,15 @@
+// Event listener untuk menutup modal peringatan
 document.getElementById('closeModalBtn').addEventListener('click', function() {
     document.getElementById('alertModal').classList.add('hidden');
 });
 
+// Fungsi untuk menampilkan modal peringatan dengan pesan khusus
 function showAlert(message) {
     document.getElementById('alertMessage').textContent = message;
     document.getElementById('alertModal').classList.remove('hidden');
 }
 
+// Fungsi untuk menampilkan atau menyembunyikan form berdasarkan jenis layanan
 function toggleForm(layanan) {
     const formKadastral = document.getElementById('formKadastral');
     const formTematik = document.getElementById('formTematik');
@@ -29,6 +32,7 @@ function toggleForm(layanan) {
     hasilContainer.classList.add('hidden');
 }
 
+// Event listener untuk input luas kadastral
 const luasInputKadastral = document.getElementById('luasInputKadastral');
 const clearKadastralBtn = document.getElementById('clearKadastralBtn');
 luasInputKadastral.addEventListener('input', function(e) {
@@ -39,6 +43,7 @@ luasInputKadastral.addEventListener('input', function(e) {
     clearKadastralBtn.classList.toggle('hidden', e.target.value === '');
 });
 
+// Event listener untuk input luas tematik
 const luasInputTematik = document.getElementById('luasInputTematik');
 const clearTematikBtn = document.getElementById('clearTematikBtn');
 luasInputTematik.addEventListener('input', function(e) {
@@ -49,6 +54,7 @@ luasInputTematik.addEventListener('input', function(e) {
     clearTematikBtn.classList.toggle('hidden', e.target.value === '');
 });
 
+// Event listener untuk input luas pengembalian batas
 const luasInputPengembalianBatas = document.getElementById('luasInputPengembalianBatas');
 const clearPengembalianBatasBtn = document.getElementById('clearPengembalianBatasBtn');
 luasInputPengembalianBatas.addEventListener('input', function(e) {
@@ -58,7 +64,8 @@ luasInputPengembalianBatas.addEventListener('input', function(e) {
     }
     clearPengembalianBatasBtn.classList.toggle('hidden', e.target.value === '');
 });
-
+        
+// Fungsi untuk membersihkan input dan menyembunyikan hasil
 function clearInput(inputId) {
     const input = document.getElementById(inputId);
     input.value = '';
@@ -71,8 +78,30 @@ function clearInput(inputId) {
         clearBtn = clearPengembalianBatasBtn;
     }
     clearBtn.classList.add('hidden');
+    document.getElementById('hasilContainer').classList.add('hidden');
 }
 
+// Fungsi untuk memeriksa apakah hasil sudah ada, lalu menghitung ulang
+function checkAndRecalculate() {
+    const hasilContainer = document.getElementById('hasilContainer');
+    if (!hasilContainer.classList.contains('hidden')) {
+        hitungTarif();
+    }
+}
+
+// Fungsi utama untuk memilih jenis perhitungan tarif
+function hitungTarif() {
+    const layanan = document.getElementById('layananDropdown').value;
+    if (layanan === 'kadastral') {
+        hitungKadastral();
+    } else if (layanan === 'tematik') {
+        hitungTematik();
+    } else if (layanan === 'pengembalian_batas') {
+        hitungPengembalianBatas();
+    }
+}
+
+// Fungsi untuk menghitung tarif layanan kadastral
 function hitungKadastral() {
     const luasRaw = document.getElementById('luasInputKadastral').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
@@ -119,6 +148,7 @@ function hitungKadastral() {
     hasilContainer.classList.remove('hidden');
 }
 
+// Fungsi untuk menghitung tarif layanan tematik
 function hitungTematik() {
     const luasRaw = document.getElementById('luasInputTematik').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
@@ -145,6 +175,7 @@ function hitungTematik() {
     hasilContainer.classList.remove('hidden');
 }
 
+// Fungsi untuk menghitung tarif layanan pengembalian batas
 function hitungPengembalianBatas() {
     const luasRaw = document.getElementById('luasInputPengembalianBatas').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
