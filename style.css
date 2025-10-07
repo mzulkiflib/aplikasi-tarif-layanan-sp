@@ -9,6 +9,7 @@
 }
 
 /* Tambahan: Memusatkan modal peringatan di tengah layar */
+/* Catatan: Diperbarui langsung di HTML agar lebih bersih */
 .flex.justify-center.items-start.pt-20 {
     /* Kelas ini ada di HTML dan harus diubah langsung di HTML jika memungkinkan.
        Namun, karena Anda meminta edit CSS, saya akan menyediakan kelas khusus 
