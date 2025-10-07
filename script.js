@@ -123,8 +123,10 @@ function hitungKadastral() {
     const hasilContainer = document.getElementById('hasilContainer');
     const catatanPasal = document.getElementById('catatanPasal');
     const hasilText = document.getElementById('hasilText');
-    const biayaIzinPenggunaanText = document.getElementById('biayaIzinPenggunaan');
-    const biayaPengukuranBidangTanahText = document.getElementById('biayaPengukuranBidangTanah');
+    const biayaIzinPenggunaanLabel = document.getElementById('biayaIzinPenggunaanLabel'); // Mengambil label
+    const biayaPengukuranBidangTanahLabel = document.getElementById('biayaPengukuranBidangTanahLabel'); // Mengambil label
+    const biayaIzinPenggunaanValue = document.getElementById('biayaIzinPenggunaanValue'); // Mengambil nilai
+    const biayaPengukuranBidangTanahValue = document.getElementById('biayaPengukuranBidangTanahValue'); // Mengambil nilai
 
     if (isNaN(luas) || luas <= 0) {
         showAlert("Mohon masukkan luas yang valid untuk layanan Pengukuran dan Pemetaan Kadastral.");
@@ -169,8 +171,12 @@ function hitungKadastral() {
     // POSISI KETERANGAN PASAL
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
     
-    biayaIzinPenggunaanText.textContent = `Ijin Penggunaan (85,54%): Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    biayaPengukuranBidangTanahText.textContent = `Penggunaan Biaya Pengukuran & PBT (80%): Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    // Menetapkan label dan nilai hasil hitungan (dengan format tebal/bold)
+    biayaIzinPenggunaanLabel.textContent = `Ijin Penggunaan (85,54%)`;
+    biayaIzinPenggunaanValue.textContent = `Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    
+    biayaPengukuranBidangTanahLabel.textContent = `Penggunaan Biaya Pengukuran & PBT (80%)`;
+    biayaPengukuranBidangTanahValue.textContent = `Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
     
     hasilContainer.classList.remove('hidden');
 
@@ -188,8 +194,10 @@ function hitungTematik() {
     const hasilContainer = document.getElementById('hasilContainer');
     const catatanPasal = document.getElementById('catatanPasal');
     const hasilText = document.getElementById('hasilText');
-    const biayaIzinPenggunaanText = document.getElementById('biayaIzinPenggunaan');
-    const biayaPengukuranBidangTanahText = document.getElementById('biayaPengukuranBidangTanah');
+    const biayaIzinPenggunaanLabel = document.getElementById('biayaIzinPenggunaanLabel');
+    const biayaPengukuranBidangTanahLabel = document.getElementById('biayaPengukuranBidangTanahLabel');
+    const biayaIzinPenggunaanValue = document.getElementById('biayaIzinPenggunaanValue');
+    const biayaPengukuranBidangTanahValue = document.getElementById('biayaPengukuranBidangTanahValue');
 
     if (isNaN(luas) || luas <= 0) {
         showAlert("Mohon masukkan luas yang valid untuk layanan Pemetaan Tematik Kawasan.");
@@ -205,8 +213,10 @@ function hitungTematik() {
     }
 
     // Untuk Tematik, komponen biaya baru dihilangkan/dikosongkan
-    biayaIzinPenggunaanText.textContent = '';
-    biayaPengukuranBidangTanahText.textContent = '';
+    biayaIzinPenggunaanLabel.textContent = '';
+    biayaPengukuranBidangTanahLabel.textContent = '';
+    biayaIzinPenggunaanValue.textContent = '';
+    biayaPengukuranBidangTanahValue.textContent = '';
 
     hasilText.textContent = `Tarif layanan Pemetaan Tematik Kawasan: Rp ${tarif.toLocaleString('id-ID')}`;
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
@@ -224,8 +234,10 @@ function hitungPengembalianBatas() {
     const hasilContainer = document.getElementById('hasilContainer');
     const catatanPasal = document.getElementById('catatanPasal');
     const hasilText = document.getElementById('hasilText');
-    const biayaIzinPenggunaanText = document.getElementById('biayaIzinPenggunaan');
-    const biayaPengukuranBidangTanahText = document.getElementById('biayaPengukuranBidangTanah');
+    const biayaIzinPenggunaanLabel = document.getElementById('biayaIzinPenggunaanLabel'); // Mengambil label
+    const biayaPengukuranBidangTanahLabel = document.getElementById('biayaPengukuranBidangTanahLabel'); // Mengambil label
+    const biayaIzinPenggunaanValue = document.getElementById('biayaIzinPenggunaanValue'); // Mengambil nilai
+    const biayaPengukuranBidangTanahValue = document.getElementById('biayaPengukuranBidangTanahValue'); // Mengambil nilai
 
     if (isNaN(luas) || luas <= 0) {
         showAlert("Mohon masukkan luas yang valid untuk layanan Pengembalian Batas.");
@@ -272,8 +284,12 @@ function hitungPengembalianBatas() {
     // POSISI KETERANGAN PASAL
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
 
-    biayaIzinPenggunaanText.textContent = `Ijin Penggunaan (85,54%): Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    biayaPengukuranBidangTanahText.textContent = `Penggunaan Biaya Pengukuran & PBT (80%): Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    // Menetapkan label dan nilai hasil hitungan (dengan format tebal/bold)
+    biayaIzinPenggunaanLabel.textContent = `Ijin Penggunaan (85,54%)`;
+    biayaIzinPenggunaanValue.textContent = `Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    
+    biayaPengukuranBidangTanahLabel.textContent = `Penggunaan Biaya Pengukuran & PBT (80%)`;
+    biayaPengukuranBidangTanahValue.textContent = `Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
     hasilContainer.classList.remove('hidden');
 
