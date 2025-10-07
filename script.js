@@ -32,6 +32,18 @@ function toggleForm(layanan) {
     hasilContainer.classList.add('hidden');
 }
 
+// Fungsi untuk mengontrol visibilitas detail Ijin Penggunaan
+function toggleDetail() {
+    const detailBiaya = document.getElementById('detailBiaya');
+    const chevronIcon = document.getElementById('chevronIcon');
+    
+    // Toggle hidden class for details
+    detailBiaya.classList.toggle('hidden');
+
+    // Toggle chevron rotation (rotate-180 makes it point up when open)
+    chevronIcon.classList.toggle('rotate-180');
+}
+
 // Event listener untuk input luas kadastral
 const luasInputKadastral = document.getElementById('luasInputKadastral');
 const clearKadastralBtn = document.getElementById('clearKadastralBtn');
@@ -41,6 +53,7 @@ luasInputKadastral.addEventListener('input', function(e) {
         e.target.value = new Intl.NumberFormat('id-ID').format(value);
     }
     clearKadastralBtn.classList.toggle('hidden', e.target.value === '');
+    checkAndRecalculate(); // Tambahkan kembali auto-recalculate
 });
 
 // Event listener untuk input luas tematik
@@ -52,6 +65,7 @@ luasInputTematik.addEventListener('input', function(e) {
         e.target.value = new Intl.NumberFormat('id-ID').format(value);
     }
     clearTematikBtn.classList.toggle('hidden', e.target.value === '');
+    checkAndRecalculate(); // Tambahkan kembali auto-recalculate
 });
 
 // Event listener untuk input luas pengembalian batas
@@ -63,6 +77,7 @@ luasInputPengembalianBatas.addEventListener('input', function(e) {
         e.target.value = new Intl.NumberFormat('id-ID').format(value);
     }
     clearPengembalianBatasBtn.classList.toggle('hidden', e.target.value === '');
+    checkAndRecalculate(); // Tambahkan kembali auto-recalculate
 });
         
 // Fungsi untuk membersihkan input dan menyembunyikan hasil
@@ -108,6 +123,8 @@ function hitungKadastral() {
     const hasilContainer = document.getElementById('hasilContainer');
     const catatanPasal = document.getElementById('catatanPasal');
     const hasilText = document.getElementById('hasilText');
+    const biayaIzinPenggunaanText = document.getElementById('biayaIzinPenggunaan');
+    const biayaPengukuranBidangTanahText = document.getElementById('biayaPengukuranBidangTanah');
 
     if (isNaN(luas) || luas <= 0) {
         showAlert("Mohon masukkan luas yang valid untuk layanan Pengukuran dan Pemetaan Kadastral.");
@@ -143,9 +160,24 @@ function hitungKadastral() {
         }
     }
     
+    // Perhitungan Komponen Biaya Baru (Hanya untuk Kadastral dan Pengembalian Batas)
+    const biayaIzinPenggunaan = tarif * 0.8554; // 85.54% dari Tarif
+    const biayaPengukuranBidangTanah = biayaIzinPenggunaan * 0.80; // 80% dari Biaya Izin Penggunaan
+
     hasilText.textContent = `Tarif layanan Pengukuran dan Pemetaan Kadastral: Rp ${tarif.toLocaleString('id-ID')}`;
+    
+    // POSISI KETERANGAN PASAL
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
+    
+    biayaIzinPenggunaanText.textContent = `Ijin Penggunaan (85,54%): Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    biayaPengukuranBidangTanahText.textContent = `Penggunaan Biaya Pengukuran & PBT (80%): Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    
     hasilContainer.classList.remove('hidden');
+
+    // Sembunyikan detail secara default dan pastikan toggle header terlihat
+    document.getElementById('detailBiaya').classList.add('hidden');
+    document.getElementById('chevronIcon').classList.remove('rotate-180');
+    document.getElementById('toggleDetailHeader').classList.remove('hidden');
 }
 
 // Fungsi untuk menghitung tarif layanan tematik
@@ -156,6 +188,8 @@ function hitungTematik() {
     const hasilContainer = document.getElementById('hasilContainer');
     const catatanPasal = document.getElementById('catatanPasal');
     const hasilText = document.getElementById('hasilText');
+    const biayaIzinPenggunaanText = document.getElementById('biayaIzinPenggunaan');
+    const biayaPengukuranBidangTanahText = document.getElementById('biayaPengukuranBidangTanah');
 
     if (isNaN(luas) || luas <= 0) {
         showAlert("Mohon masukkan luas yang valid untuk layanan Pemetaan Tematik Kawasan.");
@@ -170,9 +204,17 @@ function hitungTematik() {
         tarif = luas * 20000;
     }
 
+    // Untuk Tematik, komponen biaya baru dihilangkan/dikosongkan
+    biayaIzinPenggunaanText.textContent = '';
+    biayaPengukuranBidangTanahText.textContent = '';
+
     hasilText.textContent = `Tarif layanan Pemetaan Tematik Kawasan: Rp ${tarif.toLocaleString('id-ID')}`;
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
     hasilContainer.classList.remove('hidden');
+
+    // Untuk Tematik, sembunyikan toggle header dan detail karena tidak ada rincian
+    document.getElementById('detailBiaya').classList.add('hidden');
+    document.getElementById('toggleDetailHeader').classList.add('hidden');
 }
 
 // Fungsi untuk menghitung tarif layanan pengembalian batas
@@ -182,6 +224,8 @@ function hitungPengembalianBatas() {
     const hasilContainer = document.getElementById('hasilContainer');
     const catatanPasal = document.getElementById('catatanPasal');
     const hasilText = document.getElementById('hasilText');
+    const biayaIzinPenggunaanText = document.getElementById('biayaIzinPenggunaan');
+    const biayaPengukuranBidangTanahText = document.getElementById('biayaPengukuranBidangTanah');
 
     if (isNaN(luas) || luas <= 0) {
         showAlert("Mohon masukkan luas yang valid untuk layanan Pengembalian Batas.");
@@ -219,7 +263,22 @@ function hitungPengembalianBatas() {
     
     const tarifFinal = tarifDasar * 1.5;
 
+    // Perhitungan Komponen Biaya Baru (Hanya untuk Kadastral dan Pengembalian Batas)
+    const biayaIzinPenggunaan = tarifFinal * 0.8554; // 85.54% dari Tarif
+    const biayaPengukuranBidangTanah = biayaIzinPenggunaan * 0.80; // 80% dari Biaya Izin Penggunaan
+
     hasilText.textContent = `Tarif layanan Pengembalian Batas: Rp ${tarifFinal.toLocaleString('id-ID')}`;
+    
+    // POSISI KETERANGAN PASAL
     catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
+
+    biayaIzinPenggunaanText.textContent = `Ijin Penggunaan (85,54%): Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    biayaPengukuranBidangTanahText.textContent = `Penggunaan Biaya Pengukuran & PBT (80%): Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
     hasilContainer.classList.remove('hidden');
+
+    // Sembunyikan detail secara default dan pastikan toggle header terlihat
+    document.getElementById('detailBiaya').classList.add('hidden');
+    document.getElementById('chevronIcon').classList.remove('rotate-180');
+    document.getElementById('toggleDetailHeader').classList.remove('hidden');
 }
