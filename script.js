@@ -1,5 +1,10 @@
 // State Global
 let currentUserRole = null; // 'pemohon', 'staf', or null
+
+// PERINGATAN KEAMANAN KRITIS: 
+// Kata sandi yang di-*hardcode* di sisi klien (browser) sangat tidak aman.
+// Dalam aplikasi nyata, autentikasi harus dilakukan melalui server (misalnya, Firebase Auth atau backend khusus)
+// menggunakan hashing (seperti bcrypt) dan komunikasi HTTPS.
 const STAFF_PASSWORD = 'SPsulsel01'; // Password Staf yang disembunyikan
 let isLoggingOut = false; // FLAG BARU: Untuk mencegah pop-up saat logout
 
@@ -78,7 +83,7 @@ function setupInputListeners(inputId, clearBtnId) {
             }
 
             clearBtn.classList.toggle('hidden', e.target.value === '');
-            checkAndRecalculate();
+            checkAndRecalculate(); // Panggil fungsi hitung ulang saat input berubah
         });
     }
 }
@@ -375,6 +380,7 @@ function hitungTarif() {
  * Menghitung tarif layanan Pengukuran dan Pemetaan Kadastral.
  */
 function hitungKadastral() {
+    // Pastikan untuk menghapus titik pemisah ribuan sebelum parsing
     const luasRaw = document.getElementById('luasInputKadastral').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
     const hasilContainer = document.getElementById('hasilContainer');
@@ -428,6 +434,7 @@ function hitungKadastral() {
  * Menghitung tarif layanan Pemetaan Tematik Kawasan (dalam Ha).
  */
 function hitungTematik() {
+    // Pastikan untuk menghapus titik pemisah ribuan sebelum parsing
     const luasRaw = document.getElementById('luasInputTematik').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
     const skala = document.getElementById('skalaDropdown').value;
@@ -467,6 +474,7 @@ function hitungTematik() {
  * Menghitung tarif layanan Pengembalian Batas (1.5x tarif kadastral).
  */
 function hitungPengembalianBatas() {
+    // Pastikan untuk menghapus titik pemisah ribuan sebelum parsing
     const luasRaw = document.getElementById('luasInputPengembalianBatas').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
     const hasilContainer = document.getElementById('hasilContainer');
