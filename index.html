@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aplikasi Tarif Survei dan Pemetaan</title>
 
+    <!-- IMPLEMENTASI SECURITY HEADERS VIA META TAGS -->
+    <!-- 1. Content Security Policy (CSP): Membatasi sumber daya yang dimuat. Mengizinkan inline karena penggunaan onclick. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' https: data:; object-src 'none'; base-uri 'self';">
+    <!-- 2. X-Frame-Options: Mencegah Clickjacking (DENY memastikan situs tidak dapat ditampilkan di iframe manapun). -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- 3. Referrer Policy: Kebijakan privasi yang baik. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
     <!-- Tautan ke Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Tautan ke Font Awesome untuk ikon -->
@@ -232,6 +240,7 @@
         </div>
         
         <!-- Modal untuk peringatan -->
+        <!-- KLAS DIBERSIHKAN: items-center digunakan untuk pemusatan vertikal di tengah -->
         <div id="alertModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex justify-center items-center p-4">
             <div class="p-5 border w-full max-w-sm shadow-2xl rounded-lg bg-white transform transition-all duration-300 scale-100 border-t-4 border-red-500">
                 <div class="mt-3 text-center">
