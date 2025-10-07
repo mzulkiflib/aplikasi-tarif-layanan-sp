@@ -1,102 +1,346 @@
-// Event listener untuk menutup modal peringatan
-document.getElementById('closeModalBtn').addEventListener('click', function() {
-    document.getElementById('alertModal').classList.add('hidden');
+// State Global
+let currentUserRole = null; // 'pemohon', 'staf', or null
+const STAFF_PASSWORD = 'SPsulsel01'; // Password Staf yang disembunyikan
+let isLoggingOut = false; // FLAG BARU: Untuk mencegah pop-up saat logout
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Event listener untuk menutup modal peringatan
+    document.getElementById('closeModalBtn').addEventListener('click', function() {
+        document.getElementById('alertModal').classList.add('hidden');
+        
+        // Kembalikan fokus ke input password staf setelah alert ditutup (jika form login staf aktif)
+        const staffLoginForm = document.getElementById('staffLoginForm');
+        if (staffLoginForm && !staffLoginForm.classList.contains('hidden')) {
+            document.getElementById('staffPasswordInput').focus();
+        }
+    });
+
+    // Setup listeners untuk input luas (untuk format angka dan tombol hapus)
+    setupInputListeners('luasInputKadastral', 'clearKadastralBtn');
+    setupInputListeners('luasInputTematik', 'clearTematikBtn');
+    setupInputListeners('luasInputPengembalianBatas', 'clearPengembalianBatasBtn');
+
+    // Setup listeners Enter untuk input Luas
+    setupEnterKeyListener('luasInputKadastral');
+    setupEnterKeyListener('luasInputTematik');
+    setupEnterKeyListener('luasInputPengembalianBatas');
+    
+    // Pastikan form default Kadastral tampil saat pertama kali dimuat
+    toggleForm('kadastral');
 });
 
-// Fungsi untuk menampilkan modal peringatan dengan pesan khusus
+// --- FUNGSI UTILITY INPUT LUAS & RESET ---
+
+/**
+ * Menambahkan event listener keydown untuk tombol Enter agar memicu hitungTarif.
+ * @param {string} inputId ID dari elemen input.
+ */
+function setupEnterKeyListener(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                hitungTarif();
+            }
+        });
+    }
+}
+
+/**
+ * Menampilkan modal peringatan kustom.
+ * @param {string} message Pesan yang akan ditampilkan.
+ */
 function showAlert(message) {
     document.getElementById('alertMessage').textContent = message;
     document.getElementById('alertModal').classList.remove('hidden');
 }
 
-// Fungsi untuk menampilkan atau menyembunyikan form berdasarkan jenis layanan
-function toggleForm(layanan) {
-    const formKadastral = document.getElementById('formKadastral');
-    const formTematik = document.getElementById('formTematik');
-    const formPengembalianBatas = document.getElementById('formPengembalianBatas');
-    const hasilContainer = document.getElementById('hasilContainer');
+/**
+ * Menambahkan event listener ke input luas untuk pemformatan angka dan visibilitas tombol clear.
+ * @param {string} inputId ID dari elemen input luas.
+ * @param {string} clearBtnId ID dari elemen tombol clear.
+ */
+function setupInputListeners(inputId, clearBtnId) {
+    const input = document.getElementById(inputId);
+    const clearBtn = document.getElementById(clearBtnId);
 
-    if (layanan === 'kadastral') {
-        formKadastral.classList.remove('hidden');
-        formTematik.classList.add('hidden');
-        formPengembalianBatas.classList.add('hidden');
-    } else if (layanan === 'tematik') {
-        formKadastral.classList.add('hidden');
-        formTematik.classList.remove('hidden');
-        formPengembalianBatas.classList.add('hidden');
-    } else if (layanan === 'pengembalian_batas') {
-        formKadastral.classList.add('hidden');
-        formTematik.classList.add('hidden');
-        formPengembalianBatas.classList.remove('hidden');
+    if (input) {
+        input.addEventListener('input', function(e) {
+            // Hapus semua karakter non-digit
+            let value = e.target.value.replace(/\D/g, ''); 
+            
+            if (value !== '') {
+                // Format angka dengan titik sebagai pemisah ribuan
+                e.target.value = new Intl.NumberFormat('id-ID').format(value);
+            } else {
+                e.target.value = '';
+            }
+
+            clearBtn.classList.toggle('hidden', e.target.value === '');
+            checkAndRecalculate();
+        });
     }
-    hasilContainer.classList.add('hidden');
 }
 
-// Fungsi untuk mengontrol visibilitas detail Ijin Penggunaan
-function toggleDetail() {
-    const detailBiaya = document.getElementById('detailBiaya');
-    const chevronIcon = document.getElementById('chevronIcon');
-    
-    // Toggle hidden class for details
-    detailBiaya.classList.toggle('hidden');
-
-    // Toggle chevron rotation (rotate-180 makes it point up when open)
-    chevronIcon.classList.toggle('rotate-180');
-}
-
-// Event listener untuk input luas kadastral
-const luasInputKadastral = document.getElementById('luasInputKadastral');
-const clearKadastralBtn = document.getElementById('clearKadastralBtn');
-luasInputKadastral.addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\./g, '');
-    if (!isNaN(value) && value !== '') {
-        e.target.value = new Intl.NumberFormat('id-ID').format(value);
-    }
-    clearKadastralBtn.classList.toggle('hidden', e.target.value === '');
-    checkAndRecalculate(); // Tambahkan kembali auto-recalculate
-});
-
-// Event listener untuk input luas tematik
-const luasInputTematik = document.getElementById('luasInputTematik');
-const clearTematikBtn = document.getElementById('clearTematikBtn');
-luasInputTematik.addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\./g, '');
-    if (!isNaN(value) && value !== '') {
-        e.target.value = new Intl.NumberFormat('id-ID').format(value);
-    }
-    clearTematikBtn.classList.toggle('hidden', e.target.value === '');
-    checkAndRecalculate(); // Tambahkan kembali auto-recalculate
-});
-
-// Event listener untuk input luas pengembalian batas
-const luasInputPengembalianBatas = document.getElementById('luasInputPengembalianBatas');
-const clearPengembalianBatasBtn = document.getElementById('clearPengembalianBatasBtn');
-luasInputPengembalianBatas.addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\./g, '');
-    if (!isNaN(value) && value !== '') {
-        e.target.value = new Intl.NumberFormat('id-ID').format(value);
-    }
-    clearPengembalianBatasBtn.classList.toggle('hidden', e.target.value === '');
-    checkAndRecalculate(); // Tambahkan kembali auto-recalculate
-});
-        
-// Fungsi untuk membersihkan input dan menyembunyikan hasil
+/**
+ * Membersihkan nilai input dan menyembunyikan tombol clear (x) pada input Luas.
+ * Fungsi ini digunakan oleh tombol clear dan reset.
+ * @param {string} inputId ID dari elemen input yang akan dibersihkan.
+ */
 function clearInput(inputId) {
     const input = document.getElementById(inputId);
-    input.value = '';
-    let clearBtn;
-    if (inputId === 'luasInputKadastral') {
-        clearBtn = clearKadastralBtn;
-    } else if (inputId === 'luasInputTematik') {
-        clearBtn = clearTematikBtn;
-    } else {
-        clearBtn = clearPengembalianBatasBtn;
+    if (input) {
+        input.value = '';
+        // Memicu event input untuk memastikan tombol clear-nya tersembunyi
+        input.dispatchEvent(new Event('input')); 
     }
-    clearBtn.classList.add('hidden');
+}
+
+/**
+ * Membersihkan semua input di semua form dan mereset tampilan hasil.
+ */
+function clearAllInputs() {
+    const luasInputIds = ['luasInputKadastral', 'luasInputTematik', 'luasInputPengembalianBatas'];
+    
+    // 1. Clear semua input luas
+    luasInputIds.forEach(id => clearInput(id));
+
+    // 2. Clear input password staf
+    const staffPasswordInput = document.getElementById('staffPasswordInput');
+    if (staffPasswordInput) {
+        staffPasswordInput.value = '';
+        const clearBtn = document.getElementById('clearStaffPasswordBtn');
+        if(clearBtn) clearBtn.classList.add('hidden');
+    }
+    
+    // 3. Sembunyikan hasil perhitungan
     document.getElementById('hasilContainer').classList.add('hidden');
 }
 
-// Fungsi untuk memeriksa apakah hasil sudah ada, lalu menghitung ulang
+/**
+ * Membersihkan status aplikasi saat ganti user atau logout.
+ */
+function resetApplicationState() {
+    clearAllInputs();
+    
+    // Set layanan kembali ke default (Kadastral)
+    const layananDropdown = document.getElementById('layananDropdown');
+    if (layananDropdown) {
+        layananDropdown.value = 'kadastral';
+    }
+    toggleForm('kadastral');
+}
+
+
+// --- FUNGSI LOGIN STAF (CLEAR DAN TOGGLE VISIBILITY) ---
+
+/**
+ * Mengatur event listener untuk input password staf (clear dan toggle visibility).
+ */
+function setupStaffPasswordListeners() {
+    const passwordInput = document.getElementById('staffPasswordInput');
+    const clearBtn = document.getElementById('clearStaffPasswordBtn');
+    const toggleBtn = document.getElementById('toggleStaffVisibilityBtn');
+    const toggleIcon = toggleBtn.querySelector('i');
+    
+    // 1. Tombol Clear (x)
+    const handlePasswordInput = function(e) {
+        clearBtn.classList.toggle('hidden', e.target.value === '');
+    };
+    passwordInput.addEventListener('input', handlePasswordInput);
+
+    const handleClearClick = function() {
+        passwordInput.value = '';
+        clearBtn.classList.add('hidden');
+        passwordInput.focus();
+    };
+    clearBtn.addEventListener('click', handleClearClick);
+    
+    // 2. Toggle Visibility (Mata)
+    const handleToggleClick = function() {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
+            toggleBtn.setAttribute('title', 'Sembunyikan Kata Sandi');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+            toggleBtn.setAttribute('title', 'Tampilkan Kata Sandi');
+        }
+        passwordInput.focus();
+    };
+    toggleBtn.addEventListener('click', handleToggleClick);
+    
+    // Simpan referensi fungsi agar bisa dihapus saat logout
+    passwordInput.dataset.handleInput = handlePasswordInput;
+    clearBtn.dataset.handleClick = handleClearClick;
+    toggleBtn.dataset.handleClick = handleToggleClick;
+
+    // Pastikan status awal tombol clear, type, dan ikon benar saat form dibuka
+    clearBtn.classList.toggle('hidden', passwordInput.value === '');
+    passwordInput.type = 'password';
+    toggleIcon.classList.remove('fa-eye');
+    toggleIcon.classList.add('fa-eye-slash');
+}
+
+/**
+ * Menghapus event listener untuk input password staf saat form disembunyikan/logout.
+ */
+function removeStaffPasswordListeners() {
+    const passwordInput = document.getElementById('staffPasswordInput');
+    const clearBtn = document.getElementById('clearStaffPasswordBtn');
+    const toggleBtn = document.getElementById('toggleStaffVisibilityBtn');
+
+    if (passwordInput && passwordInput.dataset.handleInput) {
+        passwordInput.removeEventListener('input', passwordInput.dataset.handleInput);
+        clearBtn.removeEventListener('click', clearBtn.dataset.handleClick);
+        toggleBtn.removeEventListener('click', toggleBtn.dataset.handleClick);
+        
+        passwordInput.dataset.handleInput = null;
+        clearBtn.dataset.handleClick = null;
+        toggleBtn.dataset.handleClick = null;
+    }
+}
+
+// --- FUNGSI LOGIN & LOGOUT ---
+
+/**
+ * Menampilkan form login staf.
+ */
+function showStaffLogin() {
+    document.getElementById('roleSelection').classList.add('hidden');
+    document.getElementById('staffLoginForm').classList.remove('hidden');
+    const passwordInput = document.getElementById('staffPasswordInput');
+    
+    setupStaffPasswordListeners(); 
+    passwordInput.focus();
+    
+    // Tambahkan event listener Enter untuk Login Staf
+    passwordInput.onkeydown = function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault(); 
+            loginUser('staf');
+        }
+    };
+}
+
+/**
+ * Menyembunyikan form login staf dan meresetnya.
+ */
+function hideStaffLogin() {
+    document.getElementById('roleSelection').classList.remove('hidden');
+    document.getElementById('staffLoginForm').classList.add('hidden');
+    removeStaffPasswordListeners();
+}
+
+/**
+ * Menangani proses login user (Pemohon atau Staf).
+ * @param {string} role Peran pengguna ('pemohon' atau 'staf').
+ */
+function loginUser(role) {
+    const loginContainer = document.getElementById('loginContainer');
+    const appContainer = document.getElementById('appContainer');
+    const userRoleDisplay = document.getElementById('userRoleDisplay');
+    
+    if (role === 'pemohon') {
+        currentUserRole = 'pemohon';
+        resetApplicationState(); // CLEAR INPUTS SAAT GANTI HAK AKSES
+        
+        appContainer.classList.remove('hidden');
+        loginContainer.classList.add('hidden');
+        userRoleDisplay.textContent = 'Status: Pemohon';
+    
+    } else if (role === 'staf') {
+        const password = document.getElementById('staffPasswordInput').value;
+        
+        if (password === STAFF_PASSWORD) {
+            currentUserRole = 'staf';
+            resetApplicationState(); // CLEAR INPUTS SAAT GANTI HAK AKSES
+            
+            appContainer.classList.remove('hidden');
+            loginContainer.classList.add('hidden');
+            userRoleDisplay.textContent = 'Status: Staf';
+            hideStaffLogin();
+        } else {
+            showAlert('Kata sandi Staf tidak valid.');
+        }
+    }
+}
+
+/**
+ * Menangani proses logout user.
+ */
+function logoutUser() {
+    // 1. SET FLAG: Ini memastikan hitungTarif tidak memunculkan pop-up
+    isLoggingOut = true; 
+    
+    // 2. Clear semua input dan reset state aplikasi
+    currentUserRole = null;
+    resetApplicationState(); 
+    
+    // 3. Pindahkan ke halaman login
+    document.getElementById('loginContainer').classList.remove('hidden');
+    document.getElementById('appContainer').classList.add('hidden');
+    document.getElementById('userRoleDisplay').textContent = 'Silakan masuk';
+    hideStaffLogin(); 
+
+    // 4. RESET FLAG: Setelah proses logout selesai
+    isLoggingOut = false;
+}
+
+// --- FUNGSI UI & LOGIKA PERHITUNGAN ---
+
+/**
+ * Menampilkan atau menyembunyikan form berdasarkan jenis layanan yang dipilih.
+ * @param {string} layanan Jenis layanan yang dipilih.
+ */
+function toggleForm(layanan) {
+    const forms = {
+        kadastral: document.getElementById('formKadastral'),
+        tematik: document.getElementById('formTematik'),
+        pengembalian_batas: document.getElementById('formPengembalianBatas')
+    };
+    const hasilContainer = document.getElementById('hasilContainer');
+
+    for (const key in forms) {
+        // Hapus input dari form yang sedang disembunyikan/sebelum berganti
+        if (!forms[key].classList.contains('hidden')) {
+            if (key === 'kadastral') clearInput('luasInputKadastral');
+            else if (key === 'tematik') clearInput('luasInputTematik');
+            else if (key === 'pengembalian_batas') clearInput('luasInputPengembalianBatas');
+        }
+
+        // Tampilkan form yang benar
+        if (key === layanan) {
+            forms[key].classList.remove('hidden');
+        } else {
+            forms[key].classList.add('hidden');
+        }
+    }
+    // Sembunyikan hasil perhitungan saat ganti layanan
+    hasilContainer.classList.add('hidden');
+}
+
+/**
+ * Mengontrol visibilitas detail komponen biaya.
+ */
+function toggleDetail() {
+    // Hanya izinkan toggle jika user adalah Staf
+    if (currentUserRole === 'staf') {
+        const detailBiaya = document.getElementById('detailBiaya');
+        const chevronIcon = document.getElementById('chevronIcon');
+        
+        detailBiaya.classList.toggle('hidden');
+        chevronIcon.classList.toggle('rotate-180');
+    }
+}
+
+/**
+ * Memeriksa apakah hasil sedang ditampilkan, jika ya, hitung ulang.
+ */
 function checkAndRecalculate() {
     const hasilContainer = document.getElementById('hasilContainer');
     if (!hasilContainer.classList.contains('hidden')) {
@@ -104,8 +348,19 @@ function checkAndRecalculate() {
     }
 }
 
-// Fungsi utama untuk memilih jenis perhitungan tarif
+/**
+ * Memanggil fungsi hitungan yang relevan berdasarkan jenis layanan yang dipilih.
+ */
 function hitungTarif() {
+    // PERBAIKAN: Cek flag isLoggingOut
+    if (!currentUserRole && !isLoggingOut) {
+        showAlert('Anda harus masuk terlebih dahulu.');
+        return;
+    } else if (!currentUserRole && isLoggingOut) {
+        // Abaikan hitung tarif jika sedang logout
+        return; 
+    }
+
     const layanan = document.getElementById('layananDropdown').value;
     if (layanan === 'kadastral') {
         hitungKadastral();
@@ -116,185 +371,150 @@ function hitungTarif() {
     }
 }
 
-// Fungsi untuk menghitung tarif layanan kadastral
+/**
+ * Menghitung tarif layanan Pengukuran dan Pemetaan Kadastral.
+ */
 function hitungKadastral() {
     const luasRaw = document.getElementById('luasInputKadastral').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
     const hasilContainer = document.getElementById('hasilContainer');
-    const catatanPasal = document.getElementById('catatanPasal');
-    const hasilText = document.getElementById('hasilText');
-    const biayaIzinPenggunaanLabel = document.getElementById('biayaIzinPenggunaanLabel'); // Mengambil label
-    const biayaPengukuranBidangTanahLabel = document.getElementById('biayaPengukuranBidangTanahLabel'); // Mengambil label
-    const biayaIzinPenggunaanValue = document.getElementById('biayaIzinPenggunaanValue'); // Mengambil nilai
-    const biayaPengukuranBidangTanahValue = document.getElementById('biayaPengukuranBidangTanahValue'); // Mengambil nilai
+    const jenisLayanan = document.getElementById('jenisKadastralDropdown').value;
 
     if (isNaN(luas) || luas <= 0) {
-        showAlert("Mohon masukkan luas yang valid untuk layanan Pengukuran dan Pemetaan Kadastral.");
         hasilContainer.classList.add('hidden');
+        // Hanya tampilkan peringatan jika tidak dalam proses logout
+        if (!isLoggingOut) showAlert("Mohon masukkan luas yang valid untuk layanan Kadastral.");
         return;
     }
     
-    const jenisLayanan = document.getElementById('jenisKadastralDropdown').value;
-    let tarif = 0;
-
+    // Konstanta berdasarkan PP 128 Tahun 2015
     const tarifDasarPertanian = 40000;
     const tarifDasarNonPertanian = 80000;
     const luas10Ha = 100000;
     const luas1000Ha = 10000000;
+    let tarif = 0;
+    const tarifDasar = jenisLayanan === 'pertanian' ? tarifDasarPertanian : tarifDasarNonPertanian;
 
     if (luas <= luas10Ha) {
-        if (jenisLayanan === 'pertanian') {
-            tarif = (luas * tarifDasarPertanian / 500) + 100000;
-        } else {
-            tarif = (luas * tarifDasarNonPertanian / 500) + 100000;
-        }
+        tarif = (luas * tarifDasar / 500) + 100000;
     } else if (luas <= luas1000Ha) {
-        if (jenisLayanan === 'pertanian') {
-            tarif = (luas * tarifDasarPertanian / 4000) + 14000000;
-        } else {
-            tarif = (luas * tarifDasarNonPertanian / 4000) + 14000000;
-        }
+        tarif = (luas * tarifDasar / 4000) + 14000000;
     } else {
-        if (jenisLayanan === 'pertanian') {
-            tarif = (luas * tarifDasarPertanian / 10000) + 134000000;
-        } else {
-            tarif = (luas * tarifDasarNonPertanian / 10000) + 134000000;
-        }
+        tarif = (luas * tarifDasar / 10000) + 134000000;
     }
     
-    // Perhitungan Komponen Biaya Baru (Hanya untuk Kadastral dan Pengembalian Batas)
-    const biayaIzinPenggunaan = tarif * 0.8554; // 85.54% dari Tarif
-    const biayaPengukuranBidangTanah = biayaIzinPenggunaan * 0.80; // 80% dari Biaya Izin Penggunaan
+    // Perhitungan Komponen Biaya untuk Staf
+    const biayaIzinPenggunaan = tarif * 0.8554;
+    const biayaPengukuranBidangTanah = biayaIzinPenggunaan * 0.80;
 
-    hasilText.textContent = `Tarif layanan Pengukuran dan Pemetaan Kadastral: Rp ${tarif.toLocaleString('id-ID')}`;
+    // Tampilkan Hasil
+    document.getElementById('hasilText').textContent = `Tarif layanan Pengukuran dan Pemetaan Kadastral: Rp ${Math.ceil(tarif).toLocaleString('id-ID')}`;
+    document.getElementById('catatanPasal').textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
     
-    // POSISI KETERANGAN PASAL
-    catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
-    
-    // Menetapkan label dan nilai hasil hitungan (dengan format tebal/bold)
-    biayaIzinPenggunaanLabel.textContent = `Ijin Penggunaan (85,54%)`;
-    biayaIzinPenggunaanValue.textContent = `Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    
-    biayaPengukuranBidangTanahLabel.textContent = `Penggunaan Biaya Pengukuran & PBT (80%)`;
-    biayaPengukuranBidangTanahValue.textContent = `Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    // Tampilkan Rincian (Staf Only)
+    document.getElementById('biayaIzinPenggunaanLabel').textContent = `Ijin Penggunaan (85,54%)`;
+    document.getElementById('biayaIzinPenggunaanValue').textContent = `Rp ${Math.ceil(biayaIzinPenggunaan).toLocaleString('id-ID')}`;
+    document.getElementById('biayaPengukuranBidangTanahLabel').textContent = `Penggunaan Biaya Pengukuran & PBT (80%)`;
+    document.getElementById('biayaPengukuranBidangTanahValue').textContent = `Rp ${Math.ceil(biayaPengukuranBidangTanah).toLocaleString('id-ID')}`;
     
     hasilContainer.classList.remove('hidden');
-
-    // Sembunyikan detail secara default dan pastikan toggle header terlihat
-    document.getElementById('detailBiaya').classList.add('hidden');
+    
+    document.getElementById('toggleDetailHeader').classList.toggle('hidden', currentUserRole === 'pemohon');
+    document.getElementById('detailBiaya').classList.add('hidden'); 
     document.getElementById('chevronIcon').classList.remove('rotate-180');
-    document.getElementById('toggleDetailHeader').classList.remove('hidden');
 }
 
-// Fungsi untuk menghitung tarif layanan tematik
+/**
+ * Menghitung tarif layanan Pemetaan Tematik Kawasan (dalam Ha).
+ */
 function hitungTematik() {
     const luasRaw = document.getElementById('luasInputTematik').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
     const skala = document.getElementById('skalaDropdown').value;
     const hasilContainer = document.getElementById('hasilContainer');
-    const catatanPasal = document.getElementById('catatanPasal');
-    const hasilText = document.getElementById('hasilText');
-    const biayaIzinPenggunaanLabel = document.getElementById('biayaIzinPenggunaanLabel');
-    const biayaPengukuranBidangTanahLabel = document.getElementById('biayaPengukuranBidangTanahLabel');
-    const biayaIzinPenggunaanValue = document.getElementById('biayaIzinPenggunaanValue');
-    const biayaPengukuranBidangTanahValue = document.getElementById('biayaPengukuranBidangTanahValue');
-
+    
     if (isNaN(luas) || luas <= 0) {
-        showAlert("Mohon masukkan luas yang valid untuk layanan Pemetaan Tematik Kawasan.");
         hasilContainer.classList.add('hidden');
+        if (!isLoggingOut) showAlert("Mohon masukkan luas yang valid untuk layanan Pemetaan Tematik Kawasan (Ha).");
         return;
     }
 
     let tarif = 0;
+    // Asumsi tarif berdasarkan PP 128/2015 Pasal 15 ayat (1) huruf a dan b.
     if (skala === '1:10000') {
         tarif = luas * 40000;
     } else if (skala === '1:25000') {
         tarif = luas * 20000;
     }
+    
+    // Kosongkan rincian karena layanan tematik tidak memiliki rincian komponen biaya yang sama.
+    document.getElementById('biayaIzinPenggunaanLabel').textContent = '';
+    document.getElementById('biayaPengukuranBidangTanahLabel').textContent = '';
+    document.getElementById('biayaIzinPenggunaanValue').textContent = '';
+    document.getElementById('biayaPengukuranBidangTanahValue').textContent = '';
 
-    // Untuk Tematik, komponen biaya baru dihilangkan/dikosongkan
-    biayaIzinPenggunaanLabel.textContent = '';
-    biayaPengukuranBidangTanahLabel.textContent = '';
-    biayaIzinPenggunaanValue.textContent = '';
-    biayaPengukuranBidangTanahValue.textContent = '';
-
-    hasilText.textContent = `Tarif layanan Pemetaan Tematik Kawasan: Rp ${tarif.toLocaleString('id-ID')}`;
-    catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
+    // Tampilkan Hasil
+    document.getElementById('hasilText').textContent = `Tarif layanan Pemetaan Tematik Kawasan: Rp ${Math.ceil(tarif).toLocaleString('id-ID')}`;
+    document.getElementById('catatanPasal').textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
     hasilContainer.classList.remove('hidden');
 
-    // Untuk Tematik, sembunyikan toggle header dan detail karena tidak ada rincian
+    // Sembunyikan rincian komponen biaya untuk layanan ini
     document.getElementById('detailBiaya').classList.add('hidden');
     document.getElementById('toggleDetailHeader').classList.add('hidden');
 }
 
-// Fungsi untuk menghitung tarif layanan pengembalian batas
+/**
+ * Menghitung tarif layanan Pengembalian Batas (1.5x tarif kadastral).
+ */
 function hitungPengembalianBatas() {
     const luasRaw = document.getElementById('luasInputPengembalianBatas').value.replace(/\./g, '');
     const luas = parseFloat(luasRaw);
     const hasilContainer = document.getElementById('hasilContainer');
-    const catatanPasal = document.getElementById('catatanPasal');
-    const hasilText = document.getElementById('hasilText');
-    const biayaIzinPenggunaanLabel = document.getElementById('biayaIzinPenggunaanLabel'); // Mengambil label
-    const biayaPengukuranBidangTanahLabel = document.getElementById('biayaPengukuranBidangTanahLabel'); // Mengambil label
-    const biayaIzinPenggunaanValue = document.getElementById('biayaIzinPenggunaanValue'); // Mengambil nilai
-    const biayaPengukuranBidangTanahValue = document.getElementById('biayaPengukuranBidangTanahValue'); // Mengambil nilai
+    const jenisLayanan = document.getElementById('jenisPengembalianBatasDropdown').value;
 
     if (isNaN(luas) || luas <= 0) {
-        showAlert("Mohon masukkan luas yang valid untuk layanan Pengembalian Batas.");
         hasilContainer.classList.add('hidden');
+        if (!isLoggingOut) showAlert("Mohon masukkan luas yang valid untuk layanan Pengembalian Batas.");
         return;
     }
     
-    const jenisLayanan = document.getElementById('jenisPengembalianBatasDropdown').value;
-    let tarifDasar = 0;
-
+    // Konstanta berdasarkan PP 128 Tahun 2015
     const tarifDasarPertanian = 40000;
     const tarifDasarNonPertanian = 80000;
     const luas10Ha = 100000;
     const luas1000Ha = 10000000;
+    let tarifDasar = 0;
+    const tarifDasarPerM2 = jenisLayanan === 'pertanian' ? tarifDasarPertanian : tarifDasarNonPertanian;
 
+    // Hitungan Tarif Dasar Kadastral
     if (luas <= luas10Ha) {
-        if (jenisLayanan === 'pertanian') {
-            tarifDasar = (luas * tarifDasarPertanian / 500) + 100000;
-        } else {
-            tarifDasar = (luas * tarifDasarNonPertanian / 500) + 100000;
-        }
+        tarifDasar = (luas * tarifDasarPerM2 / 500) + 100000;
     } else if (luas <= luas1000Ha) {
-        if (jenisLayanan === 'pertanian') {
-            tarifDasar = (luas * tarifDasarPertanian / 4000) + 14000000;
-        } else {
-            tarifDasar = (luas * tarifDasarNonPertanian / 4000) + 14000000;
-        }
+        tarifDasar = (luas * tarifDasarPerM2 / 4000) + 14000000;
     } else {
-        if (jenisLayanan === 'pertanian') {
-            tarifDasar = (luas * tarifDasarPertanian / 10000) + 134000000;
-        } else {
-            tarifDasar = (luas * tarifDasarNonPertanian / 10000) + 134000000;
-        }
+        tarifDasar = (luas * tarifDasarPerM2 / 10000) + 134000000;
     }
     
+    // Tarif Pengembalian Batas = Tarif Dasar Kadastral * 1.5
     const tarifFinal = tarifDasar * 1.5;
 
-    // Perhitungan Komponen Biaya Baru (Hanya untuk Kadastral dan Pengembalian Batas)
-    const biayaIzinPenggunaan = tarifFinal * 0.8554; // 85.54% dari Tarif
-    const biayaPengukuranBidangTanah = biayaIzinPenggunaan * 0.80; // 80% dari Biaya Izin Penggunaan
+    // Perhitungan Komponen Biaya untuk Staf
+    const biayaIzinPenggunaan = tarifFinal * 0.8554;
+    const biayaPengukuranBidangTanah = biayaIzinPenggunaan * 0.80;
 
-    hasilText.textContent = `Tarif layanan Pengembalian Batas: Rp ${tarifFinal.toLocaleString('id-ID')}`;
-    
-    // POSISI KETERANGAN PASAL
-    catatanPasal.textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
+    // Tampilkan Hasil
+    document.getElementById('hasilText').textContent = `Tarif layanan Pengembalian Batas: Rp ${Math.ceil(tarifFinal).toLocaleString('id-ID')}`;
+    document.getElementById('catatanPasal').textContent = "Tarif tersebut tidak termasuk biaya transportasi, akomodasi dan konsumsi (Pasal 21 PP 128 Tahun 2015)";
 
-    // Menetapkan label dan nilai hasil hitungan (dengan format tebal/bold)
-    biayaIzinPenggunaanLabel.textContent = `Ijin Penggunaan (85,54%)`;
-    biayaIzinPenggunaanValue.textContent = `Rp ${biayaIzinPenggunaan.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-    
-    biayaPengukuranBidangTanahLabel.textContent = `Penggunaan Biaya Pengukuran & PBT (80%)`;
-    biayaPengukuranBidangTanahValue.textContent = `Rp ${biayaPengukuranBidangTanah.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    // Tampilkan Rincian (Staf Only)
+    document.getElementById('biayaIzinPenggunaanLabel').textContent = `Ijin Penggunaan (85,54%)`;
+    document.getElementById('biayaIzinPenggunaanValue').textContent = `Rp ${Math.ceil(biayaIzinPenggunaan).toLocaleString('id-ID')}`;
+    document.getElementById('biayaPengukuranBidangTanahLabel').textContent = `Penggunaan Biaya Pengukuran & PBT (80%)`;
+    document.getElementById('biayaPengukuranBidangTanahValue').textContent = `Rp ${Math.ceil(biayaPengukuranBidangTanah).toLocaleString('id-ID')}`;
 
     hasilContainer.classList.remove('hidden');
 
-    // Sembunyikan detail secara default dan pastikan toggle header terlihat
-    document.getElementById('detailBiaya').classList.add('hidden');
+    document.getElementById('toggleDetailHeader').classList.toggle('hidden', currentUserRole === 'pemohon');
+    document.getElementById('detailBiaya').classList.add('hidden'); 
     document.getElementById('chevronIcon').classList.remove('rotate-180');
-    document.getElementById('toggleDetailHeader').classList.remove('hidden');
 }
