@@ -67,8 +67,8 @@
             <div class="mb-6">
                 <label for="skalaDropdown" class="block text-gray-700 font-semibold mb-2">Pilih Skala Pemetaan:</label>
                 <select id="skalaDropdown" onchange="checkAndRecalculate()" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
-                    <option value="1:10000">Skala 1 : 10.000</option>
-                    <option value="1:25000">Skala 1 : 25.000</option>
+                    <option value="1:10000">Pemetaan Tematik Kawasan Skala 1:10.000</option>
+                    <option value="1:25000">Pemetaan Tematik Kawasan Skala 1:25.000</option>
                 </select>
             </div>
 
@@ -131,9 +131,20 @@
             </div>
 
             <!-- Detail Biaya yang akan di-toggle (Default Hidden) -->
-            <div id="detailBiaya" class="space-y-1 pt-2 hidden border-t border-blue-300">
-                <p id="biayaIzinPenggunaan" class="text-sm font-medium"></p>
-                <p id="biayaPengukuranBidangTanah" class="text-sm font-medium"></p>
+            <div id="detailBiaya" class="space-y-2 pt-2 border-t border-blue-300 hidden">
+                
+                <!-- Item Ijin Penggunaan -->
+                <div>
+                    <p id="biayaIzinPenggunaanLabel" class="text-sm text-blue-800"></p>
+                    <p id="biayaIzinPenggunaanValue" class="text-base font-extrabold text-blue-900"></p>
+                </div>
+
+                <!-- Item Penggunaan Biaya Pengukuran & PBT -->
+                <div>
+                    <p id="biayaPengukuranBidangTanahLabel" class="text-sm text-blue-800"></p>
+                    <p id="biayaPengukuranBidangTanahValue" class="text-base font-extrabold text-blue-900"></p>
+                </div>
+
             </div>
 
             <p id="catatanPasal" class="text-xs text-gray-500 italic mt-3"></p>
@@ -160,4 +171,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
