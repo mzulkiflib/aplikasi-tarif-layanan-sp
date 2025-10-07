@@ -1,17 +1,5 @@
+/* Menggunakan font Inter */
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f0f4f8;
+    /* Tailwind classes handle the rest of the layout and colors */
 }
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-input[type="number"] {
-    -moz-appearance: textfield;
-}
-
-/* Tailwind CSS classes */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
