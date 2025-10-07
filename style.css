@@ -1,5 +1,19 @@
-/* Menggunakan font Inter */
-body {
-    font-family: 'Inter', sans-serif;
-    /* Tailwind classes handle the rest of the layout and colors */
+/* Mengatur rotasi ikon chevron saat detail dibuka */
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* Mengatur agar modal tampil di atas segalanya */
+#alertModal {
+    z-index: 1000;
+}
+
+/* Tambahan: Memusatkan modal peringatan di tengah layar */
+.flex.justify-center.items-start.pt-20 {
+    /* Kelas ini ada di HTML dan harus diubah langsung di HTML jika memungkinkan.
+       Namun, karena Anda meminta edit CSS, saya akan menyediakan kelas khusus 
+       yang dapat Anda tambahkan ke HTML untuk menggantikan kelas lama. 
+       Alternatifnya, kita bisa menimpa properti di sini: */
+    align-items: center !important; /* Menimpa items-start */
+    padding-top: 0 !important; /* Menghapus pt-20 */
 }
