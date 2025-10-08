@@ -256,7 +256,7 @@ function loginUser(role) {
         
         appContainer.classList.remove('hidden');
         loginContainer.classList.add('hidden');
-        userRoleDisplay.textContent = 'Status: Pemohon';
+        userRoleDisplay.textContent = 'Pemohon';
     
     } else if (role === 'staf') {
         const password = document.getElementById('staffPasswordInput').value;
@@ -267,7 +267,7 @@ function loginUser(role) {
             
             appContainer.classList.remove('hidden');
             loginContainer.classList.add('hidden');
-            userRoleDisplay.textContent = 'Status: Staf';
+            userRoleDisplay.textContent = 'Staf';
             hideStaffLogin();
         } else {
             showAlert('Kata sandi Staf tidak valid.');
@@ -526,3 +526,4 @@ function hitungPengembalianBatas() {
     document.getElementById('detailBiaya').classList.add('hidden'); 
     document.getElementById('chevronIcon').classList.remove('rotate-180');
 }
+
